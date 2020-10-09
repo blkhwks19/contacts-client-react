@@ -1,7 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import axios from 'axios';
 import {
-  
+  List,
+  ListItem,
+  ListItemText,
 } from '@material-ui/core';
 
 class ContactList extends Component {
@@ -12,16 +14,24 @@ class ContactList extends Component {
   componentDidMount() {
     axios.get('http://localhost:3002/contacts')
       .then(res => {
-        this.setState({ contacts: res.data });
+        this.setState({ contacts: res.data.contacts });
       });
   }
 
   render() {
     return (
       <Fragment>
-        <ul>
-          { this.state.contacts.map(contact => <li>{contact.firstName}</li>)}
-        </ul>
+        <List>
+          { this.state.contacts.map(contact => {
+            const name = `${contact.firstName} ${contact.lastName}`;
+            return (
+
+              <ListItem>
+                <ListItemText primary={name} />
+              </ListItem>
+            )
+          }) }
+        </List>
       </Fragment>
     )
   }

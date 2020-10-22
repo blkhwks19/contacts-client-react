@@ -30,9 +30,28 @@ class ContactList extends Component {
   }
 
   componentDidMount() {
+    this.getContacts();
+  }
+
+  getContacts = () => {
     axios.get('http://localhost:3002/contacts')
       .then(res => {
         this.setState({ contacts: res.data });
+      });
+  }
+
+  createContact = (contact) => {
+    axios.post('http://localhost:3002/contacts', contact)
+      .then(res => {
+        this.closeDialog();
+        this.getContacts();
+      });
+  }
+
+  deleteContact = (contact) => {
+    axios.delete(`http://localhost:3002/contacts/${contact.id}`)
+      .then(res => {
+        this.getContacts();
       });
   }
 
@@ -57,7 +76,7 @@ class ContactList extends Component {
   }
 
   submitDialog = () => {
-    // get data
+    // get data from form
     const contact = {
       firstName: document.getElementById('firstName').value,
       lastName: document.getElementById('lastName').value,
@@ -78,14 +97,7 @@ class ContactList extends Component {
     }
 
     // submit request
-    // axios.post('http://localhost:3002/contacts', contact)
-    //   .then(res => {
-    //     this.closeDialog();
-        // axios.get('http://localhost:3002/contacts')
-        //   .then(res => {
-        //     this.setState({ contacts: res.data.contacts });
-        //   });
-      // });
+    this.createContact(contact);
   }
 
   render() {
@@ -106,7 +118,7 @@ class ContactList extends Component {
                       <IconButton>
                         <EditIcon color="primary" />
                       </IconButton> 
-                      <IconButton>
+                      <IconButton onClick={() => this.deleteContact(contact)}>
                         <DeleteIcon color="secondary" />
                       </IconButton>
                     </ListItemSecondaryAction>

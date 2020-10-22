@@ -2,4 +2,4 @@
 To run: npm run serve
 
 # TODO
-Floating add button and dialog moved into contactlist. Now make form work and refresh contact list after submit.
+Can get, add, and delete successfully! Next, add ability to edit contact. Need to add editing flag to reuse same dialog as adding.

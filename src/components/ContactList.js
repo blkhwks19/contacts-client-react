@@ -27,6 +27,16 @@ class ContactList extends Component {
   state = {
     contacts: [],
     dialog: false,
+    editing: false,
+    id: '',
+    firstName: '',
+    lastName: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    email: '',
+    phone: '',
   }
 
   componentDidMount() {
@@ -55,39 +65,71 @@ class ContactList extends Component {
       });
   }
 
+  editContact = (contact) => {
+    axios.put(`http://localhost:3002/contacts/${contact.id}`, contact)
+      .then(res => {
+        this.closeDialog();
+        this.getContacts();
+      });
+  }
+
+  openDialogForEdit = (contact) => {
+    this.setState({
+      editing: true,
+      id: contact.id,
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      address: contact.address,
+      city: contact.city,
+      state: contact.state,
+      zip: contact.zip,
+      email: contact.email,
+      phone: contact.phone,
+      dialog: true,
+    });
+  }
+
   openDialog = () => {
     this.setState({ dialog: true });
   }
 
   closeDialog = () => {
-    this.setState({ dialog: false });
+    this.setState({ 
+      dialog: false,
+      editing: false
+    });
     this.resetDialog();
   }
 
   resetDialog = () => {
-    document.getElementById('firstName').value = '';
-    document.getElementById('lastName').value = '';
-    document.getElementById('address').value = '';
-    document.getElementById('city').value = '';
-    document.getElementById('state').value = '';
-    document.getElementById('zip').value = '';
-    document.getElementById('email').value = '';
-    document.getElementById('phone').value = '';
+    this.setState({
+      firstName: '',
+      lastName: '',
+      address: '',
+      city: '',
+      state: '',
+      zip: '',
+      email: '',
+      phone: '',
+    });
   }
 
-  submitDialog = () => {
-    // get data from form
-    const contact = {
-      firstName: document.getElementById('firstName').value,
-      lastName: document.getElementById('lastName').value,
-      address: document.getElementById('address').value,
-      city: document.getElementById('city').value,
-      state: document.getElementById('state').value,
-      zip: document.getElementById('zip').value,
-      email: document.getElementById('email').value,
-      phone: document.getElementById('phone').value,
-    };
-    
+  submitForm = () => {
+    // get data from state
+    let contact = {
+      firstName: this.state.firstName,
+      lastName: this.state.lastName,
+      address: this.state.address,
+      city: this.state.city,
+      state: this.state.state,
+      zip: this.state.zip,
+      email: this.state.email,
+      phone: this.state.phone,
+    }
+    if (this.state.editing) {
+      contact = {...contact, id: this.state.id};
+    }
+
     // check if anything is missing
     for (const prop in contact) {
       if (contact[prop] === '') {
@@ -96,8 +138,18 @@ class ContactList extends Component {
       }
     }
 
-    // submit request
-    this.createContact(contact);
+    // submit
+    if (this.state.editing) {
+      this.editContact(contact);
+    } else {
+      this.createContact(contact);
+    }
+  }
+
+  onChangeForm = (field, value) => {
+    this.setState({
+      [field]: value,
+    });
   }
 
   render() {
@@ -110,12 +162,12 @@ class ContactList extends Component {
                 <div key={contact.id}>
                   <Divider />
                   <ListItem>
-                    <ListItemAvatar color="primary">
-                      <Avatar>{ contact.firstName.charAt(0).toUpperCase() + contact.lastName.charAt(0).toUpperCase() }</Avatar>
+                    <ListItemAvatar>
+                      <Avatar style={{ backgroundColor: "#3f51b5" }}>{ contact.firstName.charAt(0).toUpperCase() + contact.lastName.charAt(0).toUpperCase() }</Avatar>
                     </ListItemAvatar>
                     <ListItemText primary={name} />
                     <ListItemSecondaryAction>
-                      <IconButton>
+                      <IconButton onClick={() => this.openDialogForEdit(contact)}>
                         <EditIcon color="primary" />
                       </IconButton> 
                       <IconButton onClick={() => this.deleteContact(contact)}>
@@ -141,70 +193,79 @@ class ContactList extends Component {
         
 
         <Dialog open={this.state.dialog} onClose={this.closeDialog}>
-          <DialogTitle>Add Contact</DialogTitle>
+          <DialogTitle>{this.state.editing ? 'Edit Contact' : 'Add Contact'}</DialogTitle>
           <DialogContent style={{overflowY:'hidden'}}>
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <TextField 
+                <TextField
                   label="First Name" 
                   fullWidth
-                  id="firstName"
                   variant="outlined"
+                  value={this.state.firstName}
+                  onChange={event => this.onChangeForm('firstName', event.target.value)}
                 />
               </Grid>
               <Grid item xs={6}>
                 <TextField 
                   label="Last Name" 
                   fullWidth
-                  id="lastName"
                   variant="outlined"
+                  value={this.state.lastName}
+                  onChange={event => this.onChangeForm('lastName', event.target.value)}
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField 
                   label="Address" 
                   fullWidth
-                  id="address"
                   variant="outlined"
+                  value={this.state.address}
+                  onChange={event => this.onChangeForm('address', event.target.value)}
                 />
               </Grid>
               <Grid item xs={6}>
                 <TextField 
                   label="City" 
                   fullWidth
-                  id="city"
                   variant="outlined"
+                  value={this.state.city}
+                  onChange={event => this.onChangeForm('city', event.target.value)}
                 />
               </Grid>
               <Grid item xs={4}>
                 <TextField 
                   label="State"
-                  id="state"
-                  variant="outlined" />
+                  variant="outlined"
+                  value={this.state.state}
+                  onChange={event => this.onChangeForm('state', event.target.value)}
+                />
               </Grid>
               <Grid item xs={2}>
                 <TextField
                   label="Zip"
-                  id="zip"
                   variant="outlined"
+                  value={this.state.zip}
+                  onChange={event => this.onChangeForm('zip', event.target.value)}
                 />
               </Grid>
               <Grid item xs={6}>
                 <TextField 
                   label="Email"
                   fullWidth
-                  id="email"
                   type="email"
                   variant="outlined"
+                  value={this.state.email}
+                  onChange={event => this.onChangeForm('email', event.target.value)}
                 />
               </Grid>
               <Grid item xs={6}>
                 <TextField
                   label="Phone"
                   fullWidth
-                  id="phone"
                   type="tel"
                   variant="outlined"
+                  value={this.state.phone}
+                  onChange={event => this.onChangeForm('phone', event.target.value)}
                 />
               </Grid>
             </Grid>
@@ -218,9 +279,9 @@ class ContactList extends Component {
             <Button 
               color="primary"
               variant="contained"
-              onClick={this.submitDialog}
+              onClick={this.submitForm}
             >
-              Submit
+              { this.state.editing ? 'Update' : 'Create' }
             </Button>
           </DialogActions>
         </Dialog>
